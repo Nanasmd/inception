@@ -12,57 +12,72 @@
 
 #!/bin/bash
 
-# Color variables for formatting
+# Color codes
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-# Base directory variable
-BASE_DIR="./project"
+# Define the base directory
+BASE_DIR=$(pwd)
+echo -e "${YELLOW}Initializing project structure in ${BASE_DIR}${NC}"
 
-# Begin setup
-echo -e "${GREEN}Setting up project structure...${NC}"
+# Create the main project directory and subdirectories
+echo -e "${GREEN}Creating project directories...${NC}"
+mkdir -p "$BASE_DIR/srcs/requirements/bonus"
+mkdir -p "$BASE_DIR/srcs/requirements/mariadb" "$BASE_DIR/srcs/requirements/nginx" "$BASE_DIR/srcs/requirements/wordpress"
 
-# Create project directories
-mkdir -p "${BASE_DIR}/srcs/requirements/{bonus,mariadb/{conf,tools},nginx/{conf,tools},wordpress/{conf,tools}}"
+# Create subdirectories for bonus services
+mkdir -p "$BASE_DIR/srcs/requirements/bonus/adminer" "$BASE_DIR/srcs/requirements/bonus/cadvisor" "$BASE_DIR/srcs/requirements/bonus/ftp-server" "$BASE_DIR/srcs/requirements/bonus/redis-cache" "$BASE_DIR/srcs/requirements/bonus/static-website"
 
-# Create necessary files
-touch "${BASE_DIR}/Makefile" \
-      "${BASE_DIR}/srcs/docker-compose.yml" \
-      "${BASE_DIR}/srcs/requirements/mariadb/conf/create_db.sh" \
-      "${BASE_DIR}/srcs/requirements/nginx/conf/nginx.conf" \
-      "${BASE_DIR}/srcs/requirements/wordpress/conf/wp-config-create.sh" \
-      "${BASE_DIR}/srcs/requirements/{mariadb,nginx,wordpress}/Dockerfile" \
-      "${BASE_DIR}/srcs/requirements/{mariadb,nginx,wordpress}/.dockerignore"
+# Create tool and config directories within services
+for SERVICE in mariadb nginx wordpress adminer cadvisor ftp-server redis-cache static-website; do
+  echo -e "${YELLOW}Setting up directories for${NC} $SERVICE..."
+  mkdir -p "$BASE_DIR/srcs/requirements/$SERVICE/tools"
+  mkdir -p "$BASE_DIR/srcs/requirements/$SERVICE/conf"
+done
 
-# Generate .dockerignore files content
-echo -e ".git\n.env" > "${BASE_DIR}/srcs/requirements/mariadb/.dockerignore"
-cp "${BASE_DIR}/srcs/requirements/mariadb/.dockerignore" "${BASE_DIR}/srcs/requirements/nginx/.dockerignore"
-cp "${BASE_DIR}/srcs/requirements/mariadb/.dockerignore" "${BASE_DIR}/srcs/requirements/wordpress/.dockerignore"
-
-# Create the .env file dynamically using $USER
-echo -e "${YELLOW}Creating .env file...${NC}"
-cat << EOF > "${BASE_DIR}/srcs/.env"
-DOMAIN_NAME=$USER.42.fr
+# Create the .env file
+echo -e "${GREEN}Creating .env file...${NC}"
+cat << EOF > "$BASE_DIR/srcs/.env"
+DOMAIN_NAME=nasamadi.42.fr
 # certificates
 CERTS_KEY=/etc/ssl/private/nginx-selfsigned.key
 CERTS_CRT=/etc/ssl/certs/nginx-selfsigned.crt
 # MySQL setup
 MYSQL_DATABASE=WordpressDB
 MYSQL_ROOT_PASSWORD=1234root4321
-MYSQL_USER=$USER
+MYSQL_USER=nasamadi
 MYSQL_PASSWORD=1234mysql4321
-FTP_USER=$USER
+FTP_USER=nasamadi
 FTP_PASSWORD=1234ftp4321
 EOF
 
-# Output final directory structure and .env content for verification
-echo -e "${GREEN}Directory structure and files created successfully.${NC}\n"
-echo -e "${YELLOW}Final project structure:${NC}"
-tree "${BASE_DIR}" --dirsfirst
-echo -e "\n${YELLOW}.env file content:${NC}"
-cat "${BASE_DIR}/srcs/.env"
+# Create a basic Makefile
+echo -e "${GREEN}Creating Makefile...${NC}"
+cat << EOF > "$BASE_DIR/Makefile"
+all:
+	@echo "Placeholder for Makefile commands"
+EOF
 
-# Completion message
-echo -e "\n${GREEN}Project setup complete!${NC}"
+# Create a basic docker-compose.yml file
+echo -e "${GREEN}Creating docker-compose.yml...${NC}"
+cat << EOF > "$BASE_DIR/srcs/docker-compose.yml"
+version: '3'
+
+services:
+  nginx:
+    build: ./requirements/nginx
+    container_name: nginx
+    volumes:
+      - ./data/nginx:/data/nginx
+    ports:
+      - "443:443"
+    networks:
+      - net
+
+networks:
+  net:
+EOF
+
+echo -e "${GREEN}Project structure setup complete.${NC}"
