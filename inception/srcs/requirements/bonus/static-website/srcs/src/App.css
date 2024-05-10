@@ -1,0 +1,10 @@
+.app {
+    background-color: lightgrey;
+  }
+
+  /* Styles the .app class to have a light grey 
+  background color. This is for the main
+  container of the React application to ensure
+  a consistent background, providing a neutral,
+  unobtrusive backdrop for the UI elements
+  throughout the application.*/
